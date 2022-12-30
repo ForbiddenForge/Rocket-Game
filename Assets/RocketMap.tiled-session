@@ -1,0 +1,93 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tmx/basic.tmx",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "BadCloud.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tmx/basic.tmx": {
+            "scale": 0.33,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 2190.9090909090905,
+                "y": 1942.4242424242425
+            }
+        },
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/Objects.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 0.125,
+            "scaleInEditor": 0.25
+        },
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/terrain_corner.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/terrain_edges.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/tiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.33,
+            "scaleInEditor": 0.5
+        },
+        "Sky Background.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Stars and Space Station Background.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "hyptosis_til-art-batch-2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/export",
+    "last.imagePath": "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/graphics/tilesets",
+    "map.height": 32,
+    "map.lastUsedExportFilter": "Tiled map files (*.tmx *.xml)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 128,
+    "map.tileWidth": 128,
+    "map.width": 35,
+    "openFiles": [
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tmx/basic.tmx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/tiles.tsx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/Objects.tsx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/terrain_edges.tsx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/terrain_corner.tsx"
+    ],
+    "project": "RocketMap.tiled-project",
+    "recentFiles": [
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tmx/basic.tmx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/terrain_corner.tsx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/terrain_edges.tsx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/Objects.tsx",
+        "C:/Users/Kotek/Dropbox/forbidden noodles/1 The Temple/10 Coding/Python/Pygame Projects/Tiled-main/data/tsx/tiles.tsx",
+        "hyptosis_til-art-batch-2.tsx",
+        "Stars and Space Station Background.tsx",
+        "Sky Background.tsx",
+        "BadCloud.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 128,
+        "width": 128
+    },
+    "tileset.type": 0
+}
