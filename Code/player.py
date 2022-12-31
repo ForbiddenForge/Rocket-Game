@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.z = LAYERS["Background Space 3"]
         self.direction = vector()
         self.pos = vector(self.rect.topleft)
-        self.speed = 100
+        self.speed = 150
 
     def import_assets(self, path):
         self.animations = {}
@@ -37,14 +37,14 @@ class Player(pygame.sprite.Sprite):
                     # idle rocket and animated rocket differ in size
                     # pixel sizes are best estimate
                     if folder[0].split("\\")[1] == "idle":
-                        surf = pygame.transform.scale(surf, (50, 79))
+                        surf = pygame.transform.scale(surf, (50, 79)).convert_alpha()
                     else:
-                        surf = pygame.transform.scale(surf, (45, 120))
+                        surf = pygame.transform.scale(surf, (45, 120)).convert_alpha()
                     key_value = folder[0].split("\\")[1]
                     self.animations[key_value].append(surf)
 
     def animate(self, dt):
-        self.frame_index += 15 * dt
+        self.frame_index += 7 * dt
         if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0
         self.image = self.animations[self.status][int(self.frame_index)]

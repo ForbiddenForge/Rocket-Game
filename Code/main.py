@@ -15,6 +15,7 @@ class AllSprites(pygame.sprite.Group):
         self.display_surface = pygame.display.get_surface()
         self.offset = vector()
 
+    # TODO change the camera method to stop this stupid fucking lag [no more offsets]
     def custom_draw(self, player):
         self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
         self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
@@ -27,6 +28,7 @@ class AllSprites(pygame.sprite.Group):
 
 class Game:
     def __init__(self):
+        pygame.mixer.pre_init(44100, 16, 2, 4096)
         pygame.init()
         self.display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Rocket Simulation")
@@ -71,11 +73,14 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+            # Run Delta Time
             dt = self.clock.tick() / 1000
-            self.display_surface.fill((100, 100, 100))
-
+            # Update Sprites
             self.all_sprites.update(dt)
-            self.all_sprites.custom_draw(self.player)
+
+            # Drawing
+            self.display_surface.fill((100, 100, 100))
+            # self.all_sprites.custom_draw(self.player)
 
             pygame.display.update()
 
