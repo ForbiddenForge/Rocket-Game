@@ -19,21 +19,11 @@ class AllSprites(pygame.sprite.Group):
     def custom_draw(self, player):
         self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
         self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
-        
-        # self.right_bound_x = player.rect.centerx + WINDOW_WIDTH  
-        # self.left_bound_x = player.rect.centerx - WINDOW_WIDTH 
-        # self.top_bound_y = player.rect.centery - WINDOW_HEIGHT 
-        # self.bottom_bound_y = player.rect.centery + WINDOW_HEIGHT
-        
+
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.z):
             offset_rect = sprite.image.get_rect(center=sprite.rect.center)
             offset_rect.center -= self.offset
-            blit = True
-            if offset_rect.right <= 0 or offset_rect.left >= WINDOW_WIDTH or offset_rect.bottom <= 0 or offset_rect.top >= WINDOW_HEIGHT:
-                blit = False
-            
-            if blit:
-                self.display_surface.blit(sprite.image, offset_rect)
+            self.display_surface.blit(sprite.image, offset_rect)
 
 
 class Game:
@@ -84,15 +74,14 @@ class Game:
                     pygame.quit()
                     sys.exit()
             # Run Delta Time
-            dt = self.clock.tick() * .001
+            dt = self.clock.tick() / 1000
             # Update Sprites
             self.all_sprites.update(dt)
 
             # Drawing
             self.display_surface.fill((100, 100, 100))
-            
-            self.all_sprites.custom_draw(self.player)
-
+``            self.all_sprites.custom_draw(self.player)
+``
             pygame.display.update()
 
 
