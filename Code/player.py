@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
         self.z = LAYERS["Background Space 3"]
         self.direction = vector()
         self.pos = vector(self.rect.topleft)
-        self.speed = 50
+        self.speed = 1000
 
     def import_assets(self, path):
         self.animations = {}
@@ -44,7 +44,7 @@ class Player(pygame.sprite.Sprite):
                     self.animations[key_value].append(surf)
 
     def animate(self, dt):
-        self.frame_index += 5 * dt
+        self.frame_index += 10 * dt
         if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0
         self.image = self.animations[self.status][int(self.frame_index)]
@@ -90,3 +90,4 @@ class Player(pygame.sprite.Sprite):
         self.input()
         self.move(dt)
         self.animate(dt)
+        print(self.pos)

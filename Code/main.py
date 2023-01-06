@@ -12,28 +12,41 @@ from player import Player
 class AllSprites(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
-        self.display_surface = pygame.display.get_surface()
+        # self.display_surface = pygame.display.get_surface()
+        # create offset for the player camera in vector format
         self.offset = vector()
+        self.bg_sky = pygame.image.load("../Map File/bg_sky.png").convert()
+        self.bg_space_1 = pygame.image.load("../Map File/bg_space_1.png").convert_alpha()
+        self.bg_space_2 = pygame.image.load("../Map File/bg_space_2.png").convert_alpha()
+        self.bg_space_3 = pygame.image.load("../Map File/bg_space_3.png").convert_alpha()
 
     # TODO change the camera method to stop this stupid fucking lag [no more offsets]
     def custom_draw(self, player):
         self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
         self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
-        
-        # self.right_bound_x = player.rect.centerx + WINDOW_WIDTH  
-        # self.left_bound_x = player.rect.centerx - WINDOW_WIDTH 
-        # self.top_bound_y = player.rect.centery - WINDOW_HEIGHT 
-        # self.bottom_bound_y = player.rect.centery + WINDOW_HEIGHT
-        
+
+        # Blit the bg / fg images in order, before blitting the sprite objects on TOP nahmean
+        game.display_surface.blit(self.bg_sky, -self.offset)
+        game.display_surface.blit(self.bg_space_1, -self.offset)
+        game.display_surface.blit(self.bg_space_2, -self.offset)
+        game.display_surface.blit(self.bg_space_3, -self.offset)
+
+        # Draw sprites according to their z value (only pertains to objects, bg's order are above, idiot)
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.z):
             offset_rect = sprite.image.get_rect(center=sprite.rect.center)
             offset_rect.center -= self.offset
+            # Only draw[blit] the sprites that are on screen. If not, they can fuck off
             blit = True
-            if offset_rect.right <= 0 or offset_rect.left >= WINDOW_WIDTH or offset_rect.bottom <= 0 or offset_rect.top >= WINDOW_HEIGHT:
+            if (
+                offset_rect.right <= 0
+                or offset_rect.left >= WINDOW_WIDTH
+                or offset_rect.bottom <= 0
+                or offset_rect.top >= WINDOW_HEIGHT
+            ):
                 blit = False
-            
+
             if blit:
-                self.display_surface.blit(sprite.image, offset_rect)
+                game.display_surface.blit(sprite.image, offset_rect)
 
 
 class Game:
@@ -54,12 +67,9 @@ class Game:
 
         # Normal Tiles without collision
         layer_list = [
-            "Background Sky",
-            "Ground",
-            "Ground Tiles",
-            "Background Space 1",
-            "Background Space 2",
-            "Background Space 3",
+            # "Background Sky",  removed to test lag issues by loading as one png file (bg)
+            "Ground Collision",
+            "Ground Non-Collision",
         ]
         for layer in layer_list:
             for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
@@ -84,13 +94,13 @@ class Game:
                     pygame.quit()
                     sys.exit()
             # Run Delta Time
-            dt = self.clock.tick() * .001
+            dt = self.clock.tick() * 0.001
             # Update Sprites
             self.all_sprites.update(dt)
 
             # Drawing
             self.display_surface.fill((100, 100, 100))
-            
+
             self.all_sprites.custom_draw(self.player)
 
             pygame.display.update()
