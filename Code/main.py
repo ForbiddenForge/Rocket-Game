@@ -16,9 +16,15 @@ class AllSprites(pygame.sprite.Group):
         # create offset for the player camera in vector format
         self.offset = vector()
         self.bg_sky = pygame.image.load("../Map File/bg_sky.png").convert()
-        self.bg_space_1 = pygame.image.load("../Map File/bg_space_1.png").convert_alpha()
-        self.bg_space_2 = pygame.image.load("../Map File/bg_space_2.png").convert_alpha()
-        self.bg_space_3 = pygame.image.load("../Map File/bg_space_3.png").convert_alpha()
+        self.bg_space_1 = pygame.image.load(
+            "../Map File/bg_space_1.png"
+        ).convert_alpha()
+        self.bg_space_2 = pygame.image.load(
+            "../Map File/bg_space_2.png"
+        ).convert_alpha()
+        self.bg_space_3 = pygame.image.load(
+            "../Map File/bg_space_3.png"
+        ).convert_alpha()
 
     # TODO change the camera method to stop this stupid fucking lag [no more offsets]
     def custom_draw(self, player):
@@ -59,6 +65,7 @@ class Game:
 
         # Groups
         self.all_sprites = AllSprites()
+        self.collision_sprites = pygame.sprite.Group()
 
         self.setup()
 
@@ -67,7 +74,6 @@ class Game:
 
         # Normal Tiles without collision
         layer_list = [
-            # "Background Sky",  removed to test lag issues by loading as one png file (bg)
             "Ground Collision",
             "Ground Non-Collision",
         ]
@@ -80,11 +86,12 @@ class Game:
                     z=LAYERS[layer],
                 )
 
-        # Player creation
         for obj in tmx_map.get_layer_by_name("Player"):
             if obj.name == "Player":
                 self.player = Player(
-                    (obj.x, obj.y), self.all_sprites, "../Player/keyframes"
+                    (obj.x, obj.y),
+                    self.all_sprites,
+                    "../Player/keyframes",
                 )
 
     def run(self):
@@ -94,12 +101,13 @@ class Game:
                     pygame.quit()
                     sys.exit()
             # Run Delta Time
-            dt = self.clock.tick() * 0.001
+            dt = self.clock.tick(120) * 0.001
+            self.display_surface.fill((100, 100, 100))
+
             # Update Sprites
             self.all_sprites.update(dt)
 
             # Drawing
-            self.display_surface.fill((100, 100, 100))
 
             self.all_sprites.custom_draw(self.player)
 
