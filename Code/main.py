@@ -73,14 +73,14 @@ class Game:
         tmx_map = load_pygame("../Map File/RocketGame.tmx")
 
         # Normal Tiles without collision
-        layer_list = [
-            "Ground Collision",
-            "Ground Non-Collision",
-        ]
-        for layer in layer_list:
-            for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
-                Tile(
-                    pos=(x * 16, y * 16),
+        # layer_list = [
+        #     "Ground Collision",
+        #     "Ground Non-Collision",
+        # ]
+        # for layer in layer_list:
+        for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
+            Tile(
+                pos=(x * 16, y * 16),
                     surf=surf,
                     group=self.all_sprites,
                     z=LAYERS[layer],
