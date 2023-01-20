@@ -4,7 +4,7 @@ import pygame
 from pygame.math import Vector2 as vector
 from pytmx.util_pygame import load_pygame
 from settings import *
-from tile import Tile
+from tile import Clouds, GroundCollisionTile, Tile
 
 from player import Player
 
@@ -26,7 +26,6 @@ class AllSprites(pygame.sprite.Group):
             "../Map File/bg_space_3.png"
         ).convert_alpha()
 
-    # TODO change the camera method to stop this stupid fucking lag [no more offsets]
     def custom_draw(self, player):
         self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
         self.offset.y = player.rect.centery - WINDOW_HEIGHT / 2
@@ -66,6 +65,7 @@ class Game:
         # Groups
         self.all_sprites = AllSprites()
         self.collision_sprites = pygame.sprite.Group()
+        self.cloud_sprites = pygame.sprite.Group()
 
         self.setup()
 
@@ -78,13 +78,21 @@ class Game:
         #     "Ground Non-Collision",
         # ]
         # for layer in layer_list:
-        for x, y, surf in tmx_map.get_layer_by_name(layer).tiles():
+        for x, y, surf in tmx_map.get_layer_by_name("Ground Non-Collision").tiles():
             Tile(
                 pos=(x * 16, y * 16),
-                    surf=surf,
-                    group=self.all_sprites,
-                    z=LAYERS[layer],
-                )
+                surf=surf,
+                group=self.all_sprites,
+                z=LAYERS["Ground Non-Collision"],
+            )
+
+        for obj in tmx_map.get_layer_by_name("Clouds"):
+            Clouds(
+                pos=(obj.x, obj.y),
+                surf=obj.image,
+                group=[self.all_sprites, self.cloud_sprites],
+                z=LAYERS["Ground Objects"],
+            )
 
         for obj in tmx_map.get_layer_by_name("Player"):
             if obj.name == "Player":

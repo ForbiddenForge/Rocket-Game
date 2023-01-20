@@ -12,15 +12,14 @@ class Tile(pygame.sprite.Sprite):
 
 
 class GroundCollisionTile(Tile):
-    def __init__(self, pos, surf, group):
-        super().__init__(pos, surf, group, LAYERS["Ground Collision"])
+    def __init__(self, pos, surf, group, z):
+        super().__init__(pos, surf, group, z)
         self.old_rect = self.rect.copy()
 
 
-class Clouds(GroundCollisionTile):
-    def __init__(self, pos, surf, group):
-        super().__init__(pos, surf, group)
-
+class Clouds(Tile):
+    def __init__(self, pos, surf, group, z):
+        super().__init__(pos, surf, group, z)
         self.direction = vector(1, 0)
         self.speed = 0
         self.pos = vector(self.rect.topleft)
