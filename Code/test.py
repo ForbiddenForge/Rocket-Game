@@ -6,7 +6,9 @@ class RocketCoreStage:
     def __init__(self):
         """Parameters for Space Launch System Core Stage (Block 1, 1B & 2)
         Reference http://www.braeunig.us/space/specs/sls.htm"""
-        self.dry_mass = 85275  # kg
+        self.dry_mass = (
+            85275  # kg BUG Uknown if this includes the 4 engine dry mass of 3525kg each
+        )
         self.burnout_mass = 112000  # kg maybe use later with mult stages
         self.propellant_mass = 979452  # kg
         self.wet_mass = self.dry_mass + self.propellant_mass
