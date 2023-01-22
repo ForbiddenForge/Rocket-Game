@@ -1,82 +1,101 @@
-import time
-
+# import scrapy
 from matplotlib import pyplot as plt
 
 
-class Rocket:
+class RocketCoreStage:
     def __init__(self):
-        self.pos = 0  # m
-        self.delta_pos = 0
+        """Parameters for Space Launch System Core Stage (Block 1, 1B & 2)
+        Reference http://www.braeunig.us/space/specs/sls.htm"""
+        self.dry_mass = 85275  # kg
+        self.burnout_mass = 112000  # kg maybe use later with mult stages
+        self.propellant_mass = 979452  # kg
+        self.wet_mass = self.dry_mass + self.propellant_mass
 
-        self.initial_vel = 0  # m/s
-        self.vel = 2400  # m/s
-        self.delta_vel = 0
+        # RS-25D engines for the SLS (4 total)
+        # Reference: https://en.wikipedia.org/wiki/RS-25
+        self.mass_flow = 515 * 4  # kg /s
+        self.specific_impulse = 366  # s for one engine, check if 4 engines change this
+        self.velocity_exhaust = simple_gravity * self.specific_impulse
 
-        self.initial_acc = 0
-        self.acc = 0  # m/s**2
+        self.thrust = (
+            self.specific_impulse
+            * simple_gravity
+            * 515
+            * 4  # Fuel flow set at 515 kg/s per engine; total of 4 engines on the Core Stage
+        )  # Newtons, listed specs for Core Stage Block 1: 7,440,000 N @ Sea Level
+        # Note: Core stage is written to provide 25% of the thrust for the entire rocket system
+        # Other stages along with their masses, thrusts, etc. are ommitted at this time.
+        # Outputs are expected to have non-ideal rocket behaviour
 
-        self.rocket_mass = 187566  # kg
-        self.initial_fuel_mass = 2591394
-        self.fuel_mass = 2591394  # kg
-        self.payload_mass = 21040  # kg
-        self.initial_total_mass = (
-            self.rocket_mass + self.payload_mass + self.initial_fuel_mass
-        )
-        self.burn_rate = 14000  # kg/s
+        # set initial acceleration at t = 0 of acc and pos
+        self.acceleration = 0
+        self.pos = 0
 
-        self.reference_area = 10  # m**2 front of rocket
-        self.drag_coef = 0.5
-
+        # create a dict for various params for plotting etc. later on
         self.rocket_parameters = {}
-        self.rocket_parameters["Time"] = []
-        self.rocket_parameters["Altitude"] = []
 
-    def calc_total_mass(self, dt):
-        self.fuel_mass = self.initial_fuel_mass - 1400 * dt
-        if self.fuel_mass > 0:
-            self.total_mass = self.rocket_mass + self.payload_mass + self.fuel_mass
-        else:
-            self.total_mass = self.rocket_mass + self.payload_mass
-            self.fuel_mass = 0
+    def calc_mass(self, dt):
+        # set propellant mass each dt minus its flow * dt
+        self.propellant_mass = self.propellant_mass - self.mass_flow * dt
+        # set the propellant mass at 0 when propellant goes negative
+        self.propellant_mass = max(self.propellant_mass, 0.0)
+        # update wet_mass (total) each dt, after updating the propellant mass above
+        self.wet_mass = self.dry_mass + self.propellant_mass
+        # Create empty lists under keys and append to these key:list as we loop
+        self.rocket_parameters["Fuel Remaining"] = []
+        self.rocket_parameters["Fuel Remaining"].append(self.propellant_mass)
+        self.rocket_parameters["Current Total Mass"] = []
+        self.rocket_parameters["Current Total Mass"].append(self.wet_mass)
         print(
-            f"Rocket total mass is: {self.total_mass}\n Fuel remaining: {self.fuel_mass}\n DT is {dt}\n"
+            f"Rocket Fuel Remaining {self.propellant_mass}\n",
+            f"Current Total Mass {self.wet_mass}\n",
         )
 
-    def calc_rocket_acc(self, dt):
-        self.acc = (self.vel / self.total_mass) * (self.burn_rate) - simple_gravity
-        self.delta_vel = self.acc * dt
-        self.vel = self.initial_vel + self.delta_vel
-        print(f"Rocket Acceleration: {self.acc}\n Rocket Velocity: {self.vel}")
+    def calc_acceleration(
+        self,
+    ):  # calculate acceleration using the thrust force F = ma :: a = F/m
+        self.acceleration = (
+            self.thrust / self.wet_mass - simple_gravity
+        )  # subtract gravity for a net force; BUG unsure about this line
+        print(f"Acceleration: {self.acceleration}\n")
 
-    def update_rocket_pos(self, dt):
-        self.delta_pos = ((self.initial_vel + self.delta_vel) / 2) * dt
-        self.pos += self.delta_pos
-        print(f"Rocket height: {self.pos} meters\n\n\n")
-        print("--------------------------------------------")
+    def move(self, dt):  # update the current velocities and position
+        # v = v0 + a * dt BUG not entirely sure this is the correct eq for finding new v @ each dt
+        self.velocity_exhaust = self.velocity_exhaust + self.acceleration * dt
+        # Delta X = v0 * dt + 1/2(a) * dt **2
+        self.delta_pos = self.velocity_exhaust * dt + 0.5 * self.acceleration * dt**2
+        # Current position = old position + delta position change [dx]
+        self.pos = self.pos + self.delta_pos
+        # Create additional name keys with empty list values, appending vals as we loop
+        self.rocket_parameters["position"] = []
+        self.rocket_parameters["position"].append(self.pos)
+        print(f"Velocity: {self.velocity_exhaust}\n")
+        print(f"pos: {self.pos}\n")
 
-    def launch_rocket(self, dt):
-        self.rocket_parameters["Time"].append(dt)
-        self.calc_total_mass(dt)
-        self.calc_rocket_acc(dt)
-        self.update_rocket_pos(dt)
-        self.rocket_parameters["Altitude"].append(round(rocket.pos))
-
-    def run(self):
-        for dt in range(0, 10):
-            print(dt)
-            self.launch_rocket(dt)
-
-
-iss_altitude = 355000  # 355km in m
-radius_earth = 6.37 * 10**6  # m
-simple_gravity = 9.81
-
-dt = 1
-
-rocket = Rocket()
-rocket.run()
+    def update(self, dt):
+        # update method that will eventually be integrated into pygame, calling methods in their logical order to calc pos
+        # and eventually move the rocket on-screen. dt is passed through as a parameter in the self.all_sprites.update(dt) call
+        # in the main game loop in main.py [rocket class will be a member of the all_sprites Group]
+        self.calc_mass(dt)
+        self.calc_acceleration()
+        self.move(dt)
 
 
-print(rocket.rocket_parameters["Altitude"])
-plt.plot(rocket.rocket_parameters["Time"], rocket.rocket_parameters["Altitude"])
+# set initial time, dt, gravity, and eventually air resistance and more complex gravity
+t = 0
+dt = 0.001  # seconds
+simple_gravity = 9.80665  # m/s**2
+
+# Create rocket object instance
+rocket = RocketCoreStage()
+
+# Loop over rocket.update and its related methods while the rocket still has fuel
+while rocket.propellant_mass > 0:
+    t += 0.001
+    print(f"Time is {t} seconds")
+    rocket.update(dt)
+    # scatter plot the time and specified paramater; testing purposes only before game implementation
+    plt.scatter(t, rocket.rocket_parameters["position"])
+
+
 plt.show()

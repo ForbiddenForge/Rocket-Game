@@ -109,7 +109,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
             # Run Delta Time
-            dt = self.clock.tick(120) * 0.001
+            dt = self.clock.tick() * 0.001
             self.display_surface.fill((100, 100, 100))
 
             # Update Sprites
