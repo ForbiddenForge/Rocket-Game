@@ -34,7 +34,6 @@ class RocketCoreStage:
         self.pos = 0
 
         # create a dict for various params for plotting etc. later on
-        self.rocket_parameters = {}
 
     def calc_mass(self, dt):
         # set propellant mass each dt minus its flow * dt
@@ -44,10 +43,6 @@ class RocketCoreStage:
         # update wet_mass (total) each dt, after updating the propellant mass above
         self.wet_mass = self.dry_mass + self.propellant_mass
         # Create empty lists under keys and append to these key:list as we loop
-        self.rocket_parameters["Fuel Remaining"] = []
-        self.rocket_parameters["Fuel Remaining"].append(self.propellant_mass)
-        self.rocket_parameters["Current Total Mass"] = []
-        self.rocket_parameters["Current Total Mass"].append(self.wet_mass)
         print(
             f"Rocket Fuel Remaining {self.propellant_mass}\n",
             f"Current Total Mass {self.wet_mass}\n",
@@ -69,8 +64,6 @@ class RocketCoreStage:
         # Current position = old position + delta position change [dx]
         self.pos = self.pos + self.delta_pos
         # Create additional name keys with empty list values, appending vals as we loop
-        self.rocket_parameters["position"] = []
-        self.rocket_parameters["position"].append(self.pos)
         print(f"Velocity: {self.velocity_exhaust}\n")
         print(f"pos: {self.pos}\n")
 
@@ -90,14 +83,23 @@ simple_gravity = 9.80665  # m/s**2
 
 # Create rocket object instance
 rocket = RocketCoreStage()
+rocket.rocket_parameters = {}
+rocket.rocket_parameters["Fuel Remaining"] = []
+rocket.rocket_parameters["Current Total Mass"] = []
+rocket.rocket_parameters["time"] = []
+rocket.rocket_parameters["position"] = []
 
 # Loop over rocket.update and its related methods while the rocket still has fuel
 while rocket.propellant_mass > 0:
     t += 0.001
+    rocket.rocket_parameters["time"].append(t)
+    rocket.rocket_parameters["Fuel Remaining"].append(rocket.propellant_mass)
+    rocket.rocket_parameters["Current Total Mass"].append(rocket.wet_mass)
+    rocket.rocket_parameters["position"].append(rocket.pos)
     print(f"Time is {t} seconds")
     rocket.update(dt)
     # scatter plot the time and specified paramater; testing purposes only before game implementation
-    plt.scatter(t, rocket.rocket_parameters["position"])
 
 
+plt.scatter(rocket.rocket_parameters["time"], rocket.rocket_parameters["position"])
 plt.show()
