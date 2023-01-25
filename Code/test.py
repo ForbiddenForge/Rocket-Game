@@ -23,7 +23,7 @@ class RocketCoreStage:
         self.thrust = 0
         self.down_force = 0
         self.resultant_force = 0
-        self.acceleration = 0
+        self.rocket_acceleration = 0
         self.pos = 0
         self.delta_pos = 0
 
@@ -44,7 +44,10 @@ class RocketCoreStage:
 
     def calc_thrust_acc_vel(self):
         # Calculate Thrust using velocity => T = v * (dm)
-        self.thrust = self.exhaust_velocity * self.mass_flow
+        if self.propellant_mass > 0:
+            self.thrust = self.exhaust_velocity * self.mass_flow
+        else: 
+            self.thrust = 0
         # Newtons, listed specs for Core Stage Block 1: 7,440,000 N @ Sea Level
         # another source lists SLS as having 8.8M N
         # Note: Core stage is written to provide 25% of the thrust for the entire rocket system
@@ -58,19 +61,25 @@ class RocketCoreStage:
         self.resultant_force = self.thrust - self.down_force
 
         # Calculate acceleration for variable mass system => a = [resultant force] / m
-        self.acceleration = self.resultant_force / self.wet_mass
-
-        self.rocket_velocity = self.rocket_velocity + self.acceleration
+        self.rocket_acceleration = self.resultant_force / self.wet_mass
+        
+        # Use kinematics equation to update velocity
+        # Second Law assumes constant "a" but with sufficiently small "dt" we can still use it
+        # for a "good enough" approximation akin to Euler methods of slope approximation
+        # Consider upgrading to the Rocket Equation's methodology at some point 
+        # and/or Runge Kutta Fourth Order [RK4]
+        self.rocket_velocity = self.rocket_velocity + self.rocket_acceleration * dt
 
     def move(self, dt):
         # Calculate delta position[displacement s] of the rocket per dt
-        self.delta_pos = self.rocket_velocity * dt + (0.5 * self.acceleration) * (
+        self.delta_pos = self.rocket_velocity * dt + (0.5 * self.rocket_acceleration) * (
             dt**2
         )
         # Current position = old position + delta position change [dx]
         self.pos = self.pos + self.delta_pos
         self.pos = max(self.pos, 0.0)
         # Create additional name keys with empty list values, appending vals as we loop
+        print(f'Acceleration: {self.rocket_acceleration}')
         print(f"Velocity: {self.rocket_velocity}\n")
         print(f"pos: {self.pos}\n")
 
@@ -109,7 +118,7 @@ while rocket.propellant_mass > 0:
     rocket.rocket_parameters["Current Total Mass"].append(rocket.wet_mass)
     rocket.rocket_parameters["position"].append(rocket.pos)
     rocket.rocket_parameters["velocity"].append(rocket.rocket_velocity)
-    rocket.rocket_parameters["acceleration"].append(rocket.acceleration)
+    rocket.rocket_parameters["acceleration"].append(rocket.rocket_acceleration)
     rocket.rocket_parameters["delta_pos"].append(rocket.delta_pos)
     
 
@@ -119,8 +128,8 @@ while rocket.propellant_mass > 0:
 
 # scatter plot the time and specified paramater; testing purposes only before game implementation
 plt.scatter(rocket.rocket_parameters["time"], rocket.rocket_parameters["position"])
-plt.xlable('Time')
+plt.xlabel('Time')
 plt.xscale('linear')
-plt.ylable('Altitude in Meters')
+plt.ylabel('Altitude in Meters')
 plt.yscale('linear')
 plt.show()
