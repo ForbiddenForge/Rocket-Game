@@ -111,9 +111,16 @@ while rocket.propellant_mass > 0:
     rocket.rocket_parameters["velocity"].append(rocket.rocket_velocity)
     rocket.rocket_parameters["acceleration"].append(rocket.acceleration)
     rocket.rocket_parameters["delta_pos"].append(rocket.delta_pos)
+    
 
-print(rocket.rocket_parameters)
+#FIXME Testing purposes only!
+# uncommenting the following line will greatly increase script run time
+# print(rocket.rocket_parameters)
 
 # scatter plot the time and specified paramater; testing purposes only before game implementation
 plt.scatter(rocket.rocket_parameters["time"], rocket.rocket_parameters["position"])
+plt.xlable('Time')
+plt.xscale('linear')
+plt.ylable('Altitude in Meters')
+plt.yscale('linear')
 plt.show()
