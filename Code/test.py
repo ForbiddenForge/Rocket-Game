@@ -85,7 +85,7 @@ class RocketCoreStage:
 
 # set initial time, dt, gravity, and eventually air resistance and more complex gravity
 t = 0
-dt = 1  # seconds
+dt = 0.001  # seconds
 simple_gravity = 9.80665  # m/s**2
 
 # Create rocket object instance
@@ -100,7 +100,7 @@ rocket.rocket_parameters["acceleration"] = []
 rocket.rocket_parameters["delta_pos"] = []
 # Loop over rocket.update and its related methods while the rocket still has fuel
 while rocket.propellant_mass > 0:
-    t += 1
+    t += 0.001
 
     print(f"Time is {t} seconds")
     rocket.update(dt)
