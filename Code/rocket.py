@@ -1,9 +1,10 @@
 # import scrapy
-import csv
 
 import matplotlib
 import mplcyberpunk
+import plots
 from matplotlib import pyplot as plt
+from pygame import Vector2 as vector
 from settings import *
 from stage import Stage
 
@@ -14,10 +15,7 @@ plt.style.use("cyberpunk")
 
 class Rocket:
     def __init__(self):
-        # Stage Abbreviations
-        # Core + Solid Rocket Booster firing = 'Core SRB'
-        # Core firing = 'Core'
-        # Interim Cryogenic Stage firing = 'Interim'
+
         self.current_stage = "Core SRB"
         self.referance_area = 0
         self.air_density = 1.225  # kg / m**3 [rho]
@@ -25,26 +23,43 @@ class Rocket:
         # List of Stage instances
         self.stage_objects = [core_stage, srb_stage, interim_stage]
 
-        # Total Values
-        self.total_dry_mass = 0
-        self.total_propellant_mass = 0
-        self.total_mass = 0
-
         # Forces
-        self.thrust = 0
-        self.down_force = 0
         self.drag_force = 0
-        self.resultant_force = 0
 
         # Update values
         self.rocket_acceleration = 0
         self.rocket_velocity = 0
         self.pos = 0
-        self.delta_pos = 0
 
         # Values used to calculate drag force
         self.drag_coefficient = 0
         self.mach_speed = 0
+
+    # Masses
+    @property
+    def total_dry_mass(self):
+        return sum([stage.dry_mass for stage in self.stage_objects])
+
+    @property
+    def total_propellant_mass(self):
+        return sum([stage.prop_mass for stage in self.stage_objects])
+
+    @property
+    def total_mass(self):
+        return sum([stage.total_mass for stage in self.stage_objects])
+
+    # Forces
+    @property
+    def weight(self):
+        return self.total_mass * simple_gravity
+
+    @property
+    def thrust(self):
+        return sum([stage.thrust for stage in self.stage_objects if stage.firing])
+
+    @property
+    def resultant_force(self):
+        return self.thrust + self.weight + self.drag_force
 
     def flight_controller(self):
         if core_stage.prop_mass > 0 and srb_stage.prop_mass > 0:
@@ -62,30 +77,15 @@ class Rocket:
             srb_stage.attached = False
             interim_stage.firing = True
             self.current_stage = "Interim"
-        for stage in self.stage_objects:
-            stage.update()
 
-    def calc_mass(self, dt):
+    def update_mass(self, dt):
+        stage_dry_masses = [stage.dry_mass for stage in self.stage_objects]
+        stage_prop_masses = [stage.prop_mass for stage in self.stage_objects]
+        stage_total_masses = [stage.total_mass for stage in self.stage_objects]
 
-        # set propellant mass each dt minus its flow * dt
-        stage_prop_mass_list = []
-        for stage in self.stage_objects:
-            stage.prop_mass = stage.prop_mass + stage.mass_flow * dt
-            # set the propellant mass at 0 when propellant goes negative
-            stage.prop_mass = max(stage.prop_mass, 0.0)
-            stage_prop_mass_list.append(stage.prop_mass)
-
-        self.total_propellant_mass = sum(stage_prop_mass_list)
-        print(f"stage prop mass list = {stage_prop_mass_list}")
-        print(f"total prop mass {self.total_propellant_mass}")
-        stage_dry_mass_list = []
-        for stage in self.stage_objects:
-            stage_dry_mass_list.append(stage.dry_mass)
-        self.total_dry_mass = sum(stage_dry_mass_list)
-        print(f"total dry mass = {self.total_dry_mass}")
-        # update total_mass (total) each dt, after updating the total propellant mass above
-        self.total_mass = self.total_dry_mass + self.total_propellant_mass
-        print(f"TOTAL MASS: {self.total_mass}")
+        print(
+            f"Core Stage Dry Mass: {stage_dry_masses[0]}\nCore Stage Prop Mass: {stage_prop_masses[0]}\nCore Stage Total Mass: {stage_total_masses[0]}\nSRB Stage Dry Mass: {stage_dry_masses[1]}\nSRB Stage Prop Mass: {stage_prop_masses[1]}\nSRB Stage Total Mass: {stage_total_masses[1]}\nInterim Stage Dry Mass: {stage_dry_masses[2]}\nInterim Stage Prop Mass: {stage_prop_masses[2]}\nInterim Stage Total Mass: {stage_total_masses[2]}\n"
+        )
 
     def calc_air_density(self):
         # Approximate air density based on the "U.S. Standard Atmosphere 1976" model
@@ -148,9 +148,9 @@ class Rocket:
         self.mach_speed = self.rocket_velocity / 343
         # calculate drag force based loosely on the curve used in artemis simulation
         # Reference: https://www.researchgate.net/publication/362270344_Preliminary_Launch_Trajectory_Simulation_for_Artemis_I_with_the_Space_Launch_System
-        if 0 > self.mach_speed <= 0.25:
-            self.drag_coefficient = 0
-        if 0.25 < self.mach_speed <= 1:
+        if self.mach_speed <= 0.25:
+            self.drag_coefficient = 0.25
+        elif 0.25 < self.mach_speed <= 1:
             self.drag_coefficient = 0.25
         elif 1.00 < self.mach_speed <= 1.25:
             self.drag_coefficient = 0.60
@@ -186,29 +186,7 @@ class Rocket:
             * self.referance_area
         )
 
-    def calc_thrust_acc_vel(self):
-        # Calculate Thrust using velocity => T = v * (dm)
-        # Create list of thrusts of each object, sum up (accounts for if stage is firing or not)
-        thrust_list = []
-        for stage in self.stage_objects:
-            thrust_list.append(stage.thrust)
-            self.thrust = sum(thrust_list)
-        print(f"thrust list:{thrust_list}")
-        print(f"thrust: {self.thrust}")
-
-        # Newtons, listed specs for Core Stage Block 1: 7,440,000 N @ Sea Level
-        # another source lists SLS as having 8.8M N
-        # Note: Core stage is written to provide 25% of the thrust for the entire rocket system
-        # Other stages along with their masses, thrusts, etc. are ommitted at this time.
-        # Outputs are expected to have non-ideal rocket behaviour
-        # ----------------------------------------------------#
-
-        # Calculate the downward force mass * g
-        self.down_force = self.total_mass * simple_gravity
-        print(f"down force: {self.down_force}")
-        # Find the resultant force
-        self.resultant_force = self.thrust + self.down_force + self.drag_force
-
+    def calc_acc_vel(self):
         # Calculate acceleration for variable mass system => a = [resultant force] / m
         self.rocket_acceleration = self.resultant_force / self.total_mass
 
@@ -226,11 +204,11 @@ class Rocket:
 
     def move(self, dt):
         # Calculate delta position[displacement s] of the rocket per dt
-        self.delta_pos = self.rocket_velocity * dt + (
-            0.5 * self.rocket_acceleration
-        ) * (dt**2)
+        delta_pos = self.rocket_velocity * dt + (0.5 * self.rocket_acceleration) * (
+            dt**2
+        )
         # Current position = old position + delta position change [dx]
-        self.pos = self.pos + self.delta_pos
+        self.pos = self.pos + delta_pos
         self.pos = max(self.pos, 0.0)
         print(f"Acceleration: {self.rocket_acceleration}")
         print(f"Velocity: {self.rocket_velocity}\n")
@@ -241,11 +219,13 @@ class Rocket:
         # and eventually move the rocket on-screen. dt is passed through as a parameter in the self.all_sprites.update(dt) call
         # in the main game loop in main.py [rocket class will be a member of the all_sprites Group]
         self.flight_controller()
-        self.calc_mass(dt)
+        for stage in self.stage_objects:
+            stage.update(dt)
+        self.update_mass(dt)
         self.calc_air_density()
         self.calc_reference_area()
         self.calc_drag_force()
-        self.calc_thrust_acc_vel()
+        self.calc_acc_vel()
         self.move(dt)
 
 
@@ -283,25 +263,8 @@ exploration_stage = Stage(
 
 rocket = Rocket()
 # Create dictionary and associated keys for use with HUD GUI within pygame
-rocket.rocket_parameters = {}
-rocket.rocket_parameters["Time"] = []
-rocket.rocket_parameters["Altitude"] = []
-rocket.rocket_parameters["Velocity"] = []
-rocket.rocket_parameters["Drag Force"] = []
-rocket.rocket_parameters["Resultant Force"] = []
-rocket.rocket_parameters["Acceleration"] = []
-rocket.rocket_parameters["Current Total Mass"] = []
-rocket.rocket_parameters["Total Fuel Remaining"] = []
-rocket.rocket_parameters["Core Fuel Remaining"] = []
-rocket.rocket_parameters["SRB Fuel Remaining"] = []
-rocket.rocket_parameters["Interim Fuel Remaining"] = []
-
-
-rocket.rocket_parameters["Thrust"] = []
-rocket.rocket_parameters["Down Force"] = []
-rocket.rocket_parameters["Mach Speed"] = []
-rocket.rocket_parameters["Air Density"] = []
-rocket.rocket_parameters["Delta_pos"] = []
+rocket_parameters = {}
+plots.create_rocket_dict(rocket_parameters)
 
 
 # set initial time, dt, gravity, and eventually air resistance and more complex gravity
@@ -310,131 +273,17 @@ dt = 0.1  # seconds
 simple_gravity = -9.80665  # m/s**2
 
 # Loop over rocket.update and its related methods while the rocket still has fuel
-while t < 500:
+while t < 1000:
     t += 0.1
     # fmt: off
     print(f"Time is {t} seconds")
     rocket.update(dt)
-    rocket.rocket_parameters["Time"].append(t)
-    rocket.rocket_parameters["Total Fuel Remaining"].append(rocket.total_propellant_mass)
-    rocket.rocket_parameters["Core Fuel Remaining"].append(core_stage.prop_mass)
-    rocket.rocket_parameters["SRB Fuel Remaining"].append(srb_stage.prop_mass)
-    rocket.rocket_parameters["Interim Fuel Remaining"].append(interim_stage.prop_mass)
-    rocket.rocket_parameters["Current Total Mass"].append(rocket.total_mass)
-    rocket.rocket_parameters["Altitude"].append(rocket.pos)
-    rocket.rocket_parameters["Velocity"].append(rocket.rocket_velocity)
-    rocket.rocket_parameters["Acceleration"].append(rocket.rocket_acceleration)
-    rocket.rocket_parameters["Delta_pos"].append(rocket.delta_pos)
-    rocket.rocket_parameters["Thrust"].append(rocket.thrust)
-    rocket.rocket_parameters["Drag Force"].append(rocket.drag_force)
-    rocket.rocket_parameters["Down Force"].append(rocket.down_force)
-    rocket.rocket_parameters["Resultant Force"].append(rocket.resultant_force)
-    rocket.rocket_parameters["Mach Speed"].append(rocket.mach_speed)
-    rocket.rocket_parameters["Air Density"].append(rocket.air_density)
+    plots.update_rocket_dict(rocket_parameters=rocket_parameters, t=t, rocket=rocket, core_stage=core_stage, srb_stage=srb_stage, interim_stage=interim_stage)
 
 
-# WARNING Testing purposes only!
-with open("Rocket Values.csv", "w") as new_file:
-    writer = csv.writer(new_file)
-    key_list = list(rocket.rocket_parameters.keys())
-
-    writer.writerow(key_list)
-    writer.writerows(zip(*rocket.rocket_parameters.values()))
-
-# scatter plot the time and specified paramater; testing purposes only before game implementation
-# fmt: off
-fig1 = plt.figure()
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Current Total Mass"],label="Current Total Mass",)
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Altitude"],label="Altitude",)
-plt.xlabel("Time")
-plt.xscale("linear")
-plt.ylabel("Altitude")
-plt.yscale("linear")
-plt.ticklabel_format(useOffset=False, style="plain")
-plt.legend()
-plt.grid(True)
-mplcyberpunk.make_lines_glow()
-plt.tight_layout()
-plt.savefig("plots/Altitude.png", dpi=fig1.dpi)
-
-
-# Velocity / Acceleration
-fig2 = plt.figure()
-
-plt.plot(
-    rocket.rocket_parameters["Time"],
-    rocket.rocket_parameters["Velocity"],
-    label="Velocity",
-)
-plt.plot(
-    rocket.rocket_parameters["Time"],
-    rocket.rocket_parameters["Acceleration"],
-    label="Acceleration",
-)
-plt.xlabel("Time")
-plt.xscale("linear")
-plt.ylabel("Velocity / Acceleration")
-plt.yscale("linear")
-plt.ticklabel_format(useOffset=False, style="plain")
-plt.legend()
-plt.grid(True)
-mplcyberpunk.make_lines_glow()
-plt.tight_layout()
-plt.savefig("plots/Velocity_Acceleration.png", dpi=fig2.dpi)
-
-
-# Force Plots
-fig3 = plt.figure()
-
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Drag Force"],label="Drag Force",)
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Down Force"],label="Down Force",)
-plt.plot(rocket.rocket_parameters["Time"], rocket.rocket_parameters["Thrust"], label="Thrust")
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Resultant Force"],label="Resultant Force",)
-plt.xlabel("Time")
-plt.xscale("linear")
-plt.ylabel("Forces")
-plt.yscale("linear")
-plt.ticklabel_format(useOffset=False, style="plain")
-plt.legend()
-plt.grid(True)
-mplcyberpunk.make_lines_glow()
-plt.tight_layout()
-plt.savefig("plots/Forces.png", dpi=fig3.dpi)
-
-fig4 = plt.figure()
-
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Current Total Mass"],label="Current Total Mass",)
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Total Fuel Remaining"],label="Total Fuel Remaining",)
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Core Fuel Remaining"] ,label="Core Fuel Remaining",)
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["SRB Fuel Remaining"] ,label="SRB Fuel Remaining",)
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Interim Fuel Remaining"] ,label="Interim Fuel Remaining",)
-plt.xlabel("Time")
-plt.xlabel("Time")
-plt.xlabel("Time")
-plt.xscale("linear")
-plt.ylabel("Mass")
-plt.yscale("linear")
-plt.ticklabel_format(useOffset=False, style="plain")
-plt.legend()
-plt.grid(True)
-mplcyberpunk.make_lines_glow()
-plt.tight_layout()
-plt.savefig("plots/Mass.png", dpi=fig4.dpi)
-
-
-fig5 = plt.figure()
-
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Velocity"],label="Velocity",)
-plt.plot(rocket.rocket_parameters["Time"],rocket.rocket_parameters["Total Fuel Remaining"],label="Total Fuel Remaining",)
-plt.xlabel("Time")
-plt.xlabel("Time")
-plt.xlabel("Time")
-plt.xscale("linear")
-plt.ylabel("Mass")
-plt.yscale("linear")
-plt.ticklabel_format(useOffset=False, style="plain")
-plt.legend()
-plt.grid(True)
-mplcyberpunk.make_lines_glow()
-plt.tight_layout()
-plt.savefig("plots/DeltaV.png", dpi=fig5.dpi)
+plots.csv_output(rocket_parameters)
+plots.altitude_plot(rocket_parameters)
+plots.velocity_plot(rocket_parameters)
+plots.force_plot(rocket_parameters)
+plots.fuel_plot(rocket_parameters)
+plots.drag_force_plot(rocket_parameters)

@@ -11,20 +11,15 @@ from player import Player
 
 class AllSprites(pygame.sprite.Group):
     def __init__(self):
+        # fmt: off
         super().__init__()
         # self.display_surface = pygame.display.get_surface()
         # create offset for the player camera in vector format
         self.offset = vector()
         self.bg_sky = pygame.image.load("../Map File/bg_sky.png").convert()
-        self.bg_space_1 = pygame.image.load(
-            "../Map File/bg_space_1.png"
-        ).convert_alpha()
-        self.bg_space_2 = pygame.image.load(
-            "../Map File/bg_space_2.png"
-        ).convert_alpha()
-        self.bg_space_3 = pygame.image.load(
-            "../Map File/bg_space_3.png"
-        ).convert_alpha()
+        self.bg_space_1 = pygame.image.load("../Map File/bg_space_1.png").convert_alpha()
+        self.bg_space_2 = pygame.image.load("../Map File/bg_space_2.png").convert_alpha()
+        self.bg_space_3 = pygame.image.load("../Map File/bg_space_3.png").convert_alpha()
 
     def custom_draw(self, player):
         self.offset.x = player.rect.centerx - WINDOW_WIDTH / 2
