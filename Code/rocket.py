@@ -178,13 +178,22 @@ class Rocket:
             self.drag_coefficient = 0.25
         elif self.mach_speed > 8:
             self.drag_coefficient = 0.23
-        self.drag_force = -(
-            0.5
-            * self.air_density
-            * (self.rocket_velocity**2)
-            * self.drag_coefficient
-            * self.referance_area
-        )
+        if self.rocket_velocity > 0:
+            self.drag_force = -(
+                0.5
+                * self.air_density
+                * (self.rocket_velocity**2)
+                * self.drag_coefficient
+                * self.referance_area
+            )
+        else:
+            self.drag_force = (
+                0.5
+                * self.air_density
+                * (self.rocket_velocity**2)
+                * self.drag_coefficient
+                * self.referance_area
+            )
 
     def calc_acc_vel(self):
         # Calculate acceleration for variable mass system => a = [resultant force] / m
@@ -229,7 +238,8 @@ class Rocket:
         self.move(dt)
 
 
-# Create stages and rocket object instances
+# Create stages and rocket object instances using settings file
+
 
 core_stage = Stage(
     dry_mass=CORE_STAGE["Dry Mass"],
@@ -260,12 +270,11 @@ exploration_stage = Stage(
     ref_area=EXPLORATION_UPPER_STAGE["Reference Area"],
 )
 
-
 rocket = Rocket()
+
 # Create dictionary and associated keys for use with HUD GUI within pygame
 rocket_parameters = {}
 plots.create_rocket_dict(rocket_parameters)
-
 
 # set initial time, dt, gravity, and eventually air resistance and more complex gravity
 t = 0
@@ -273,17 +282,25 @@ dt = 0.1  # seconds
 simple_gravity = -9.80665  # m/s**2
 
 # Loop over rocket.update and its related methods while the rocket still has fuel
-while t < 1000:
+while t < 3500:
     t += 0.1
     # fmt: off
     print(f"Time is {t} seconds")
     rocket.update(dt)
-    plots.update_rocket_dict(rocket_parameters=rocket_parameters, t=t, rocket=rocket, core_stage=core_stage, srb_stage=srb_stage, interim_stage=interim_stage)
+    plots.update_rocket_dict(
+        rocket_parameters=rocket_parameters, 
+        t=t, 
+        rocket=rocket, 
+        core_stage=core_stage, 
+        srb_stage=srb_stage, 
+        interim_stage=interim_stage
+        )
 
 
 plots.csv_output(rocket_parameters)
 plots.altitude_plot(rocket_parameters)
 plots.velocity_plot(rocket_parameters)
+plots.acceleration_plot(rocket_parameters)
 plots.force_plot(rocket_parameters)
 plots.fuel_plot(rocket_parameters)
 plots.drag_force_plot(rocket_parameters)

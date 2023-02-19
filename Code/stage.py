@@ -20,7 +20,7 @@ class Stage:
         self.attached = True
 
     def calc_mass(self, dt):
-        # Update propellant mass per delta time
+        # Update propellant mass and total mass per delta time
         self.prop_mass = self.prop_mass + self.mass_flow * dt
         self.prop_mass = max(self.prop_mass, 0.0)
         self.total_mass = self.prop_mass + self.dry_mass
