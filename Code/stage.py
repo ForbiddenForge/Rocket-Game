@@ -1,5 +1,6 @@
 from pygame import Vector2 as vector
 from settings import *
+from gravity import gravity_acceleration_calc
 
 
 class Stage:

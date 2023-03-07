@@ -13,10 +13,17 @@ LAYERS = {
     "Map Bound": 9,
 }
 
+GRAVITATIONAL_CONSTANT = 6.6738e-11
+EARTH_MASS = 5.9722e24  # kg
+EARTH_RADIUS = 6.371e6  # m
 
+
+# ----------------------------------------------------------------
+# --------------- STAGE PARAMETERS BELOW -------------------------
+# ----------------------------------------------------------------
 # Parameters for Space Launch System Core Stage (Block 1, 1B & 2)
 # Reference http://www.braeunig.us/space/specs/sls.htm
-
+#                        Notes:
 # Block 1 Consists of Core + SRB + ICPS + Spacecraft[payload]
 # Block 1B consists of Core + SRB + Exploration Upper Stage + Spacecraft[payload]
 

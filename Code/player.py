@@ -75,33 +75,31 @@ class Player(pygame.sprite.Sprite):
     # Make a collision method here for the collision sprites and create the collision sprites group, creating w objects in main
 
     def move(self, dt):
-        #Normalize a vector (length of a vector should be ==1)
+        # Normalize a vector (length of a vector should be ==1)
         if self.direction.magnitude() != 0:
             self.direction = self.direction.normalize()
-        
-        
-        #Horizontal Movement
+
+        # Horizontal Movement
         self.pos.x += self.direction.x * self.speed * dt
         self.rect.x = round(self.pos.x)
         # TODO
         # add collision text args here for self.collision horizontal
 
-        #Vertical Movement
+        # Vertical Movement
         self.pos.y += self.direction.y * self.speed * dt
         self.rect.y = round(self.pos.y)
         # TODO
         # add collision text args here for self.collision vertical
-        
+
     def map_bound(self):
         if self.rect.left < 375:
-            self.pos.x = 375  + self.rect.width
-            # self.hitbox.left = 375 TODO hitbox implementation 
+            self.pos.x = 375 + self.rect.width
+            # self.hitbox.left = 375 TODO hitbox implementation
             self.rect.left = 375
         if self.rect.right > 1970:
-            self.pos.x = 1970 - self.rect.width 
+            self.pos.x = 1970 - self.rect.width
             # self.hitbox.right = 1970 TODO hitbox implementation
             self.rect.right = 1970
-            
 
     def update(self, dt):
         # self.old_rect = self.rect.copy() include once collisions added
